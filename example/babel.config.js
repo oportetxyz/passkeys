@@ -10,7 +10,7 @@ module.exports = function (api) {
 					extensions: [".tsx", ".ts", ".js", ".json"],
 					alias: {
 						// For development, we want to alias the library to the source
-						"react-native-passkeys": path.join(__dirname, "..", "src", "index.ts"),
+						"@oportet/passkeys": path.join(__dirname, "..", "src", "index.ts"),
 					},
 				},
 			],

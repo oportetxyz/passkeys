@@ -1,4 +1,4 @@
-# React Native Passkeys
+# @oportet/passkeys
 
 This is an Expo module to help you create and authenticate with passkeys on iOS, Android & web with the same api. The library aims to stay close to the standard [`navigator.credentials`](https://w3c.github.io/webappsec-credential-management/#framework-credential-management). More specifically, we provide an api for `get` & `create` functions (since these are the functions available cross-platform).
 
@@ -9,7 +9,7 @@ Further niceties include some flag functions that indicate support for certain f
 ## Installation
 
 ```sh
-npx expo install react-native-passkeys
+npx expo install @oportet/passkeys
 ```
 
 ## iOS Setup
@@ -149,7 +149,7 @@ npx expo run:android # or build in the cloud with EAS
 A credential manager keeps showing the name a passkey was created with. When the account's name changes, `signalCurrentUserDetails` sends the new one.
 
 ```ts
-import { signalCurrentUserDetails } from "react-native-passkeys";
+import { signalCurrentUserDetails } from "@oportet/passkeys";
 
 const sent = await signalCurrentUserDetails({
   rpId: "example.com",

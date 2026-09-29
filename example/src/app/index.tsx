@@ -1,7 +1,7 @@
 import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Application from "expo-application";
-import * as passkey from "react-native-passkeys";
+import * as passkey from "@oportet/passkeys";
 import alert from "../utils/alert";
 import React from "react";
 import { base64 } from "@hexagon/base64";

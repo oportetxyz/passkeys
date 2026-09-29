@@ -3,10 +3,10 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "react-native-passkeys": [
+      "@oportet/passkeys": [
         "../src/index"
       ],
-      "react-native-passkeys/*": [
+      "@oportet/passkeys/*": [
         "../src/*"
       ]
     }

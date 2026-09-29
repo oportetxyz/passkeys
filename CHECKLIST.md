@@ -40,7 +40,7 @@
    ```
 
 2. Create a new release on GitHub:
-   - Go to the [releases page](https://github.com/peterferguson/react-native-passkeys/releases)
+   - Go to the [releases page](https://github.com/oportetxyz/passkeys/releases)
    - Click "Draft a new release"
    - Select the new tag
    - Copy the relevant changelog entries
@@ -50,7 +50,7 @@
 
 1. Test the new version in a fresh project:
    ```bash
-   pnpm add react-native-passkeys@latest
+   pnpm add @oportet/passkeys@latest
    ```
 
 2. Verify the example app works with the new version:
