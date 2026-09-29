@@ -34,9 +34,6 @@
     "type": "git",
     "url": "git+https://github.com/oportetxyz/passkeys.git"
   },
-  "bugs": {
-    "url": "https://github.com/oportetxyz/passkeys/issues"
-  },
   "author": "Peter Ferguson <peterferguson95@gmail.com> (https://github.com/peterferguson)",
   "contributors": [
     "Johannes Krauser"
