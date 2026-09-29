@@ -1,5 +1,20 @@
 # @oportet/passkeys
 
+Passkeys for Expo apps on iOS, Android and the web, behind one API.
+
+This is Oportet's fork of [react-native-passkeys](https://github.com/peterferguson/react-native-passkeys) by [Peter Ferguson](https://github.com/peterferguson). He designed and wrote the module. The fork adds capabilities the original does not have yet. See [Acknowledgements](#acknowledgements) and [License](#license).
+
+## What the fork adds
+
+| Addition | Details |
+| --- | --- |
+| `signalCurrentUserDetails`, which renames a passkey in the credential manager | [Renaming a passkey](#renaming-a-passkey) |
+| `androidx.credentials` 1.6.0 on Android, up from 1.3.0-alpha01 | Needs `compileSdkVersion` 35 |
+
+Everything else works as it does in the original, and the rest of this page is its documentation.
+
+## About the module
+
 This is an Expo module to help you create and authenticate with passkeys on iOS, Android & web with the same api. The library aims to stay close to the standard [`navigator.credentials`](https://w3c.github.io/webappsec-credential-management/#framework-credential-management). More specifically, we provide an api for `get` & `create` functions (since these are the functions available cross-platform).
 
 The adaptations we make are simple niceties like providing automatic conversion of base64-url encoded strings to buffer. This is also done to make it easier to pass the values to the native side.
@@ -170,3 +185,16 @@ It renames every passkey that shares the `rpId` and `userId`, so give each passk
 The promise resolves to `false` when the platform has no Signal API, and nothing is sent. Android allows 10 signals in 120 seconds.
 
 The two signals that delete passkeys, `signalUnknownCredential` and `signalAllAcceptedCredentials`, are left out on purpose. On iOS 26 they have been seen deleting a passkey that belongs to another account.
+
+## Acknowledgements
+
+react-native-passkeys is the work of [Peter Ferguson](https://github.com/peterferguson) and its contributors. The API, the native modules for iOS and Android and the web implementation all come from there. If this package is useful to you, the original is the one to star.
+
+## License
+
+MIT, the same license as the original. See [LICENSE](LICENSE).
+
+- The original work is copyright Peter Ferguson.
+- The changes made in this fork are copyright Oportet, released under the same MIT terms.
+
+Both notices are in `LICENSE`, which ships with the package. [CHANGELOG.md](CHANGELOG.md) lists what the fork changed, starting from `react-native-passkeys` 0.4.2.
