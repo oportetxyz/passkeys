@@ -1,19 +1,8 @@
-# @oportet/passkeys
+> **This is a fork.** `@oportet/passkeys` is [Oportet](https://github.com/oportetxyz)'s fork of [react-native-passkeys](https://github.com/peterferguson/react-native-passkeys) by [Peter Ferguson](https://github.com/peterferguson), who designed and wrote the module.
+>
+> His README follows, word for word. What the fork changes is kept apart from it, in [Fork notes](#fork-notes) at the end.
 
-Passkeys for Expo apps on iOS, Android and the web, behind one API.
-
-This is Oportet's fork of [react-native-passkeys](https://github.com/peterferguson/react-native-passkeys) by [Peter Ferguson](https://github.com/peterferguson). He designed and wrote the module. The fork adds capabilities the original does not have yet. See [Acknowledgements](#acknowledgements) and [License](#license).
-
-## What the fork adds
-
-| Addition | Details |
-| --- | --- |
-| `signalCurrentUserDetails`, which renames a passkey in the credential manager | [Renaming a passkey](#renaming-a-passkey) |
-| `androidx.credentials` 1.6.0 on Android, up from 1.3.0-alpha01 | Needs `compileSdkVersion` 35 |
-
-Everything else works as it does in the original, and the rest of this page is its documentation.
-
-## About the module
+# React Native Passkeys
 
 This is an Expo module to help you create and authenticate with passkeys on iOS, Android & web with the same api. The library aims to stay close to the standard [`navigator.credentials`](https://w3c.github.io/webappsec-credential-management/#framework-credential-management). More specifically, we provide an api for `get` & `create` functions (since these are the functions available cross-platform).
 
@@ -24,7 +13,7 @@ Further niceties include some flag functions that indicate support for certain f
 ## Installation
 
 ```sh
-npx expo install @oportet/passkeys
+npx expo install react-native-passkeys
 ```
 
 ## iOS Setup
@@ -159,7 +148,28 @@ npx expo prebuild -p android
 npx expo run:android # or build in the cloud with EAS
 ```
 
-## Renaming a passkey
+## Fork notes
+
+Everything above this heading is Peter Ferguson's README for react-native-passkeys 0.4.2, unchanged. Everything below is about the fork.
+
+### Installing the fork
+
+The fork has its own package name, so the install command is not the one above:
+
+```sh
+npx expo install @oportet/passkeys
+```
+
+Import from `@oportet/passkeys` too. On Android set `compileSdkVersion` to 35, where the original asks for 34. The other setup steps are the same.
+
+### What the fork adds
+
+| Addition | Details |
+| --- | --- |
+| `signalCurrentUserDetails`, which renames a passkey in the credential manager | [Renaming a passkey](#renaming-a-passkey) |
+| `androidx.credentials` 1.6.0 on Android, up from 1.3.0-alpha01 | Needs `compileSdkVersion` 35 and `minSdkVersion` 23 |
+
+### Renaming a passkey
 
 A credential manager keeps showing the name a passkey was created with. When the account's name changes, `signalCurrentUserDetails` sends the new one.
 
@@ -179,22 +189,22 @@ It renames every passkey that shares the `rpId` and `userId`, so give each passk
 | Platform | Support |
 | --- | --- |
 | iOS | 26 and up. Only `name` is applied. |
-| Android | 15 and up, with Google Play services. Needs `compileSdkVersion` 35. |
+| Android | 15 and up, with Google Play services. |
 | Web | Browsers with the WebAuthn Signal API. |
 
 The promise resolves to `false` when the platform has no Signal API, and nothing is sent. Android allows 10 signals in 120 seconds.
 
 The two signals that delete passkeys, `signalUnknownCredential` and `signalAllAcceptedCredentials`, are left out on purpose. On iOS 26 they have been seen deleting a passkey that belongs to another account.
 
-## Acknowledgements
+### Acknowledgements
 
 react-native-passkeys is the work of [Peter Ferguson](https://github.com/peterferguson) and its contributors. The API, the native modules for iOS and Android and the web implementation all come from there. If this package is useful to you, the original is the one to star.
 
-## License
+### License
 
 MIT, the same license as the original. See [LICENSE](LICENSE).
 
 - The original work is copyright Peter Ferguson.
 - The changes made in this fork are copyright Oportet, released under the same MIT terms.
 
-Both notices are in `LICENSE`, which ships with the package. [CHANGELOG.md](CHANGELOG.md) lists what the fork changed, starting from `react-native-passkeys` 0.4.2.
+Both notices are in `LICENSE`, which ships with the package. In [CHANGELOG.md](CHANGELOG.md), the entries up to 0.4.2 are the original's and the fork's come after them.
