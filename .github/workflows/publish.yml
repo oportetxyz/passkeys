@@ -1,0 +1,64 @@
+name: Publish
+
+on:
+  push:
+    branches: [oportet]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Version or publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Publishes through npm trusted publishing, so there is no npm token here.
+    # npmjs.com trusts this repo and this file name; renaming the file breaks it.
+    permissions:
+      contents: write
+      id-token: write
+      pull-requests: write
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          # Changesets reads the history to write the changelog
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: 10
+
+      - name: Set up Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      # Trusted publishing needs npm 11.5.1 or newer. Held on 11: npm 12 prints
+      # `npm info --json` as an array, so changesets finds no published versions
+      # and tries to publish the current one again.
+      - name: Install npm 11
+        run: npm install -g npm@11
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # With changesets waiting this opens the version pull request. Without
+      # any, it publishes the version in package.json if npm does not have it.
+      - name: Version or publish
+        uses: changesets/action@06245a4e0a36c064a573d4150030f5ec548e4fcc # the pin oportetxyz/oportet publishes with
+        with:
+          title: "chore: version packages"
+          commit: "chore: version packages"
+          createGithubReleases: true
+          publish: pnpm changeset publish
+          version: pnpm changeset version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
