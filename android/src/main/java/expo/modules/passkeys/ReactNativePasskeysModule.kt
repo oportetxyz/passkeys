@@ -4,10 +4,12 @@ import AuthenticationResponseJSON
 import PublicKeyCredentialCreationOptions
 import PublicKeyCredentialRequestOptions
 import RegistrationResponseJSON
+import SignalCurrentUserDetailsOptions
 import androidx.credentials.CreatePublicKeyCredentialRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetPublicKeyCredentialOption
+import androidx.credentials.SignalCurrentUserDetailsRequest
 import androidx.credentials.exceptions.CreateCredentialCancellationException
 import androidx.credentials.exceptions.CreateCredentialException
 import androidx.credentials.exceptions.CreateCredentialInterruptedException
@@ -23,6 +25,8 @@ import androidx.credentials.exceptions.GetCredentialUnsupportedException
 import androidx.credentials.exceptions.NoCredentialException
 import androidx.credentials.exceptions.publickeycredential.CreatePublicKeyCredentialDomException
 import androidx.credentials.exceptions.publickeycredential.GetPublicKeyCredentialDomException
+import androidx.credentials.exceptions.publickeycredential.SignalCredentialStateException
+import androidx.credentials.exceptions.publickeycredential.SignalCredentialStateProviderConfigurationException
 import com.google.gson.Gson
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.modules.Module
@@ -90,6 +94,34 @@ class ReactNativePasskeysModule : Module() {
                     promise.resolve(getCredentialResponse)
                 } catch (e: GetCredentialException) {
                     promise.reject("Passkey Get", getAuthenticationException(e), e)
+                }
+            }
+        }
+
+        AsyncFunction("signalCurrentUserDetails") { request: SignalCurrentUserDetailsOptions, promise: Promise ->
+            // Credential providers only take signals from Android 15
+            val minApiLevelSignals = 35
+            val currentApiLevel = android.os.Build.VERSION.SDK_INT
+
+            if (currentApiLevel < minApiLevelSignals) {
+                promise.resolve(false)
+            } else {
+                val credentialManager =
+                    CredentialManager.create(appContext.reactContext?.applicationContext!!)
+                val json = Gson().toJson(request)
+
+                mainScope.launch {
+                    try {
+                        credentialManager.signalCredentialState(SignalCurrentUserDetailsRequest(json))
+                        promise.resolve(true)
+                    } catch (e: SignalCredentialStateProviderConfigurationException) {
+                        // Nothing on the device takes signals, which is the same as no support
+                        promise.resolve(false)
+                    } catch (e: SignalCredentialStateException) {
+                        promise.reject("Passkey Signal", e.message ?: e.toString(), e)
+                    } catch (e: IllegalArgumentException) {
+                        promise.reject("Passkey Signal", e.message ?: e.toString(), e)
+                    }
                 }
             }
         }

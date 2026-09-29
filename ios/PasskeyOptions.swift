@@ -58,3 +58,18 @@ internal struct PublicKeyCredentialRequestOptions: Record {
     @Field
     var extensions: AuthenticationExtensionsClientInputs?
 }
+
+/// Specification reference: https://w3c.github.io/webauthn/#dictdef-currentuserdetailsoptions
+internal struct SignalCurrentUserDetailsOptions: Record {
+    @Field
+    var rpId: String
+
+    @Field
+    var userId: Base64URLString
+
+    @Field
+    var name: String
+
+    @Field
+    var displayName: String
+}

@@ -143,3 +143,30 @@ Next, you'll need to modify the `compileSdkVersion` in your `app.json` to be at 
 npx expo prebuild -p android
 npx expo run:android # or build in the cloud with EAS
 ```
+
+## Renaming a passkey
+
+A credential manager keeps showing the name a passkey was created with. When the account's name changes, `signalCurrentUserDetails` sends the new one.
+
+```ts
+import { signalCurrentUserDetails } from "react-native-passkeys";
+
+const sent = await signalCurrentUserDetails({
+  rpId: "example.com",
+  userId, // base64url, the user handle the passkey was created with
+  name: "new-name",
+  displayName: "New Name",
+});
+```
+
+It renames every passkey that shares the `rpId` and `userId`, so give each passkey its own user id if they need different names.
+
+| Platform | Support |
+| --- | --- |
+| iOS | 26 and up. Only `name` is applied. |
+| Android | 15 and up, with Google Play services. Needs `compileSdkVersion` 35. |
+| Web | Browsers with the WebAuthn Signal API. |
+
+The promise resolves to `false` when the platform has no Signal API, and nothing is sent. Android allows 10 signals in 120 seconds.
+
+The two signals that delete passkeys, `signalUnknownCredential` and `signalAllAcceptedCredentials`, are left out on purpose. On iOS 26 they have been seen deleting a passkey that belongs to another account.

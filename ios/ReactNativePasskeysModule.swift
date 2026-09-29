@@ -110,6 +110,26 @@ final public class ReactNativePasskeysModule: Module, PasskeyResultHandler {
             context.passkeyDelegate.performAuthForController(controller: authController)
         }.runOnQueue(.main)
 
+        AsyncFunction("signalCurrentUserDetails") {
+            (request: SignalCurrentUserDetailsOptions) async throws -> Bool in
+            guard let userHandle: Data = Data(base64URLEncoded: request.userId) else {
+                throw InvalidUserIdException()
+            }
+
+            // ASCredentialUpdater comes with the iOS 26 SDK, which only Swift 6.2 and up can build
+            #if compiler(>=6.2)
+                if #available(iOS 26.0, *) {
+                    try await ASCredentialUpdater().reportPublicKeyCredentialUpdate(
+                        relyingPartyIdentifier: request.rpId,
+                        userHandle: userHandle,
+                        newName: request.name)
+                    return true
+                }
+            #endif
+
+            return false
+        }
+
     }
 
     private func isAvailable() throws -> Bool {

@@ -12,6 +12,7 @@ import type {
 	PublicKeyCredentialRequestOptionsJSON,
 	RegistrationCredential,
 	CreationResponse,
+	SignalCurrentUserDetailsOptions,
 } from "./ReactNativePasskeys.types";
 
 export default {
@@ -181,6 +182,18 @@ export default {
 			} satisfies AuthenticationExtensionsClientOutputsJSON,
 			type: "public-key",
 		};
+	},
+
+	async signalCurrentUserDetails(options: SignalCurrentUserDetailsOptions): Promise<boolean> {
+		// TODO: remove the override when typescript has updated webauthn types
+		const credential = window.PublicKeyCredential as typeof PublicKeyCredential & {
+			signalCurrentUserDetails?: (options: SignalCurrentUserDetailsOptions) => Promise<void>;
+		};
+
+		if (typeof credential?.signalCurrentUserDetails !== "function") return false;
+
+		await credential.signalCurrentUserDetails(options);
+		return true;
 	},
 };
 

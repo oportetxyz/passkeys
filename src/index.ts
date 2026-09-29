@@ -9,6 +9,7 @@ import type {
 	PublicKeyCredentialCreationOptionsJSON,
 	PublicKeyCredentialRequestOptionsJSON,
 	CreationResponse,
+	SignalCurrentUserDetailsOptions,
 } from "./ReactNativePasskeys.types";
 
 export function isSupported(): boolean {
@@ -49,4 +50,21 @@ export async function get(
 	},
 ): Promise<AuthenticationResponseJSON | null> {
 	return await ReactNativePasskeysModule.get(request);
+}
+
+/**
+ * Tells the credential manager the current name of a user, so the passkeys it lists for them stop
+ * showing the name they were created with. Every passkey sharing the `rpId` and `userId` is renamed.
+ *
+ * Platform support:
+ * - iOS: 26+
+ * - Android: 15+ with Google Play services
+ * - Web: browsers that implement the WebAuthn Signal API
+ *
+ * @returns `false` where the platform has no Signal API, in which case nothing was sent
+ */
+export async function signalCurrentUserDetails(
+	options: SignalCurrentUserDetailsOptions,
+): Promise<boolean> {
+	return await ReactNativePasskeysModule.signalCurrentUserDetails(options);
 }

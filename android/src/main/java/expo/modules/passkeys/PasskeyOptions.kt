@@ -340,3 +340,21 @@ class AuthenticationExtensionsPRFValuesJSON: Record {
     @Field
     var second: String? = null;
 }
+
+/**
+Specification reference: https://w3c.github.io/webauthn/#dictdef-currentuserdetailsoptions
+ */
+class SignalCurrentUserDetailsOptions: Record {
+
+    @Field
+    var rpId: String = ""
+
+    @Field
+    var userId: String = ""
+
+    @Field
+    var name: String = ""
+
+    @Field
+    var displayName: String = ""
+}

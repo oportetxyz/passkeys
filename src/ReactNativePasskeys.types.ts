@@ -255,3 +255,16 @@ export interface CreationResponse extends Omit<RegistrationResponseJSON, "respon
 		getPublicKey(): Base64URLString | null;
 	};
 }
+
+/**
+ * The account details a credential manager should show for the passkeys of one user.
+ *
+ * - Specification reference: https://w3c.github.io/webauthn/#dictdef-currentuserdetailsoptions
+ */
+export interface SignalCurrentUserDetailsOptions {
+	rpId: string;
+	userId: Base64URLString;
+	name: string;
+	// iOS takes a single name, so this one only reaches Android and web
+	displayName: string;
+}
