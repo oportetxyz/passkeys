@@ -25,7 +25,6 @@ import androidx.credentials.exceptions.GetCredentialUnsupportedException
 import androidx.credentials.exceptions.NoCredentialException
 import androidx.credentials.exceptions.publickeycredential.CreatePublicKeyCredentialDomException
 import androidx.credentials.exceptions.publickeycredential.GetPublicKeyCredentialDomException
-import androidx.credentials.exceptions.publickeycredential.SignalCredentialStateException
 import androidx.credentials.exceptions.publickeycredential.SignalCredentialStateProviderConfigurationException
 import com.google.gson.Gson
 import expo.modules.kotlin.Promise
@@ -117,9 +116,8 @@ class ReactNativePasskeysModule : Module() {
                     } catch (e: SignalCredentialStateProviderConfigurationException) {
                         // Nothing on the device takes signals, which is the same as no support
                         promise.resolve(false)
-                    } catch (e: SignalCredentialStateException) {
-                        promise.reject("Passkey Signal", e.message ?: e.toString(), e)
-                    } catch (e: IllegalArgumentException) {
+                    } catch (e: Exception) {
+                        // Nothing handles this coroutine's exceptions, so one left uncaught ends the app
                         promise.reject("Passkey Signal", e.message ?: e.toString(), e)
                     }
                 }
