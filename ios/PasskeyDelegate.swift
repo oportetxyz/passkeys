@@ -107,6 +107,7 @@ class PasskeyDelegate: NSObject, ASAuthorizationControllerDelegate,
                 id: Field.init(wrappedValue: credential.credentialID.toBase64URLEncodedString()),
                 rawId: Field.init(wrappedValue: credential.credentialID.toBase64URLEncodedString()),
                 response: Field.init(wrappedValue: response),
+                authenticatorAttachment: Field.init(wrappedValue: .platform),
                 clientExtensionResults: Field.init(wrappedValue: clientExtensionResults)
             )
 
@@ -130,7 +131,8 @@ class PasskeyDelegate: NSObject, ASAuthorizationControllerDelegate,
             let registrationResult = RegistrationResponseJSON(
                 id: Field.init(wrappedValue: credential.credentialID.toBase64URLEncodedString()),
                 rawId: Field.init(wrappedValue: credential.credentialID.toBase64URLEncodedString()),
-                response: Field.init(wrappedValue: response)
+                response: Field.init(wrappedValue: response),
+                authenticatorAttachment: Field.init(wrappedValue: .crossPlatform)
             )
 
             handler.onSuccess(Either(registrationResult))
