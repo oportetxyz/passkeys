@@ -87,6 +87,16 @@ class PublicKeyCredentialRequestOptions: Record {
     var extensions: AuthenticationExtensionsClientInputs? = null
 }
 
+/**
+Options for get outside the WebAuthn request. Credential Manager always offers security keys from
+its own sheet, so Android reads none of them.
+ */
+class GetOptions: Record {
+
+    @Field
+    var securityKey: Boolean? = null
+}
+
 class PublicKeyCredentialRpEntity: Record {
 
     @Field

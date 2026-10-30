@@ -25,8 +25,13 @@ final public class ReactNativePasskeysModule: Module, PasskeyResultHandler {
             return false
         }
 
+        // Only Android can prepare a get ahead of the tap
+        AsyncFunction("prepareGet") { (_: PublicKeyCredentialRequestOptions) -> Bool in
+            return false
+        }
+
         AsyncFunction("get") {
-            (request: PublicKeyCredentialRequestOptions, promise: Promise) throws in
+            (request: PublicKeyCredentialRequestOptions, options: GetOptions?, promise: Promise) throws in
             do {
                 // - all the throws are already in the helper `isAvailable` so we don't need to do anything
                 // ? this seems like a code smell ... what is the best way to do this
@@ -41,14 +46,20 @@ final public class ReactNativePasskeysModule: Module, PasskeyResultHandler {
                 throw InvalidChallengeException()
             }
 
-            let crossPlatformKeyAssertionRequest = prepareCrossPlatformAssertionRequest(
-                challenge: challengeData, request: request)
             let platformKeyAssertionRequest = try preparePlatformAssertionRequest(
                 challenge: challengeData, request: request)
+            var authorizationRequests: [ASAuthorizationRequest] = [platformKeyAssertionRequest]
 
-            let authController = ASAuthorizationController(authorizationRequests: [
-                platformKeyAssertionRequest, crossPlatformKeyAssertionRequest,
-            ])
+            // Asking for a security key as well makes iOS open a chooser sheet instead of going
+            // straight to Face ID, so only ask when the caller wants one or a listed credential is
+            // known to be a security key
+            if options?.securityKey == true || listsSecurityKey(request.allowCredentials) {
+                authorizationRequests.append(
+                    prepareCrossPlatformAssertionRequest(challenge: challengeData, request: request))
+            }
+
+            let authController = ASAuthorizationController(
+                authorizationRequests: authorizationRequests)
 
             passkeyDelegate.performAuthForController(controller: authController)
         }.runOnQueue(.main)
@@ -310,6 +321,12 @@ private func preparePlatformRegistrationRequest(
     return platformKeyRegistrationRequest
 }
 
+private func listsSecurityKey(_ allowCredentials: [PublicKeyCredentialDescriptor]?) -> Bool {
+    return allowCredentials?.contains(where: { descriptor in
+        descriptor.transports?.contains(where: { $0.appleise() != nil }) == true
+    }) == true
+}
+
 private func prepareCrossPlatformAssertionRequest(
     challenge: Data,
     request: PublicKeyCredentialRequestOptions
@@ -321,6 +338,10 @@ private func prepareCrossPlatformAssertionRequest(
     let crossPlatformAssertionRequest:
         ASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest =
             crossPlatformCredentialProvider.createCredentialAssertionRequest(challenge: challenge)
+
+    if let userVerificationPref = request.userVerification {
+        crossPlatformAssertionRequest.userVerificationPreference = userVerificationPref.appleise()
+    }
 
     if let allowCredentials = request.allowCredentials {
         if !allowCredentials.isEmpty {

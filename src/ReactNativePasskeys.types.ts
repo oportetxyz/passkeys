@@ -61,6 +61,14 @@ export interface PublicKeyCredentialCreationOptionsJSON {
 }
 
 /**
+ * Options for `get` that sit outside the WebAuthn request
+ */
+export interface GetOptions {
+	/** iOS: also offer security keys, whatever `allowCredentials` says */
+	securityKey?: boolean;
+}
+
+/**
  * A variant of PublicKeyCredentialRequestOptions suitable for JSON transmission
  */
 export interface PublicKeyCredentialRequestOptionsJSON {

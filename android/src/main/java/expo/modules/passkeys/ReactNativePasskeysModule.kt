@@ -1,6 +1,7 @@
 package expo.modules.passkeys
 
 import AuthenticationResponseJSON
+import GetOptions
 import PublicKeyCredentialCreationOptions
 import PublicKeyCredentialRequestOptions
 import RegistrationResponseJSON
@@ -9,6 +10,7 @@ import androidx.credentials.CreatePublicKeyCredentialRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetPublicKeyCredentialOption
+import androidx.credentials.PrepareGetCredentialResponse
 import androidx.credentials.SignalCurrentUserDetailsRequest
 import androidx.credentials.exceptions.CreateCredentialCancellationException
 import androidx.credentials.exceptions.CreateCredentialException
@@ -34,9 +36,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+private class PreparedGet(
+    val requestJson: String,
+    val handle: PrepareGetCredentialResponse.PendingGetCredentialHandle,
+)
+
 class ReactNativePasskeysModule : Module() {
 
     private val mainScope = CoroutineScope(Dispatchers.Default)
+
+    @Volatile
+    private var preparedGet: PreparedGet? = null
 
     override fun definition() = ModuleDefinition {
         Name("ReactNativePasskeys")
@@ -74,7 +84,12 @@ class ReactNativePasskeysModule : Module() {
             }
         }
 
-        AsyncFunction("get") { request: PublicKeyCredentialRequestOptions, promise: Promise ->
+        AsyncFunction("prepareGet") { request: PublicKeyCredentialRequestOptions, promise: Promise ->
+            // prepareGetCredential needs Android 14; older versions get no head start
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                promise.resolve(false)
+                return@AsyncFunction
+            }
             val credentialManager =
                 CredentialManager.create(appContext.reactContext?.applicationContext!!)
             val json = Gson().toJson(request)
@@ -83,8 +98,37 @@ class ReactNativePasskeysModule : Module() {
 
             mainScope.launch {
                 try {
+                    val prepared = credentialManager.prepareGetCredential(getCredentialRequest)
+                    preparedGet = prepared.pendingGetCredentialHandle?.let { PreparedGet(json, it) }
+                    promise.resolve(preparedGet != null)
+                } catch (e: Exception) {
+                    // A failed prepare only costs the head start: get falls back to getCredential
+                    preparedGet = null
+                    promise.resolve(false)
+                }
+            }
+        }
+
+        AsyncFunction("get") { request: PublicKeyCredentialRequestOptions, _: GetOptions?, promise: Promise ->
+            val credentialManager =
+                CredentialManager.create(appContext.reactContext?.applicationContext!!)
+            val json = Gson().toJson(request)
+            val getCredentialRequest =
+                GetCredentialRequest(listOf(GetPublicKeyCredentialOption(json)))
+            // A handle is bound to the exact request it was prepared for, and is spent by one get
+            val prepared = preparedGet?.takeIf { it.requestJson == json }
+            preparedGet = null
+
+            mainScope.launch {
+                try {
                     val result = appContext.currentActivity?.let {
-                        credentialManager.getCredential(it, getCredentialRequest)
+                        if (prepared != null &&
+                            android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+                        ) {
+                            credentialManager.getCredential(it, prepared.handle)
+                        } else {
+                            credentialManager.getCredential(it, getCredentialRequest)
+                        }
                     }
                     val response =
                         result?.credential?.data?.getString("androidx.credentials.BUNDLE_KEY_AUTHENTICATION_RESPONSE_JSON")

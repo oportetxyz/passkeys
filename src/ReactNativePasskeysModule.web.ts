@@ -101,6 +101,10 @@ export default {
 		};
 	},
 
+	async prepareGet(): Promise<boolean> {
+		return false;
+	},
+
 	async get({
 		mediation,
 		signal,

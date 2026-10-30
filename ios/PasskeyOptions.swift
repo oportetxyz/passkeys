@@ -59,6 +59,13 @@ internal struct PublicKeyCredentialRequestOptions: Record {
     var extensions: AuthenticationExtensionsClientInputs?
 }
 
+/// Options for get outside the WebAuthn request
+internal struct GetOptions: Record {
+    /// Also offer security keys, whatever allowCredentials says
+    @Field
+    var securityKey: Bool?
+}
+
 /// Specification reference: https://w3c.github.io/webauthn/#dictdef-currentuserdetailsoptions
 internal struct SignalCurrentUserDetailsOptions: Record {
     @Field
