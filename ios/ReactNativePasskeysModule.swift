@@ -339,6 +339,10 @@ private func prepareCrossPlatformAssertionRequest(
         ASAuthorizationSecurityKeyPublicKeyCredentialAssertionRequest =
             crossPlatformCredentialProvider.createCredentialAssertionRequest(challenge: challenge)
 
+    if let userVerificationPref = request.userVerification {
+        crossPlatformAssertionRequest.userVerificationPreference = userVerificationPref.appleise()
+    }
+
     if let allowCredentials = request.allowCredentials {
         if !allowCredentials.isEmpty {
             crossPlatformAssertionRequest.allowedCredentials = allowCredentials.map({
