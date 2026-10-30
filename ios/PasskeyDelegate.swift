@@ -26,7 +26,23 @@ class PasskeyDelegate: NSObject, ASAuthorizationControllerDelegate,
 
     @available(iOS 13.0, *)
     func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
-        return UIApplication.shared.keyWindow ?? ASPresentationAnchor()
+        return foregroundSceneWindow()
+            ?? UIApplication.shared.keyWindow
+            ?? UIApplication.shared.windows.first
+            ?? ASPresentationAnchor()
+    }
+
+    // Under the scene life cycle the sheet needs a window from the scene on screen, since a
+    // window made with no scene never shows. Apps without scenes get nil here and keep the
+    // application-wide lookups. Written out because the expo helper for this needs SDK 58.
+    @available(iOS 13.0, *)
+    private func foregroundSceneWindow() -> UIWindow? {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        let scene =
+            scenes.first { $0.activationState == .foregroundActive }
+            ?? scenes.first { $0.activationState == .foregroundInactive }
+
+        return scene?.windows.first { $0.isKeyWindow }
     }
 
     @available(iOS 13.0, *)
