@@ -6,6 +6,7 @@ import PublicKeyCredentialCreationOptions
 import PublicKeyCredentialRequestOptions
 import RegistrationResponseJSON
 import SignalCurrentUserDetailsOptions
+import android.os.SystemClock
 import androidx.credentials.CreatePublicKeyCredentialRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
@@ -36,10 +37,23 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+// WebAuthn's default when a request names no timeout.
+private const val DEFAULT_REQUEST_TIMEOUT_MS = 60_000L
+
 private class PreparedGet(
     val requestJson: String,
     val handle: PrepareGetCredentialResponse.PendingGetCredentialHandle,
-)
+    // elapsedRealtime, so a clock change or deep sleep cannot make an old handle look fresh
+    val preparedAtMs: Long,
+    timeoutMs: Int?,
+) {
+    // A handle used past the request's timeout fails at once with "[15] Flow has timed out".
+    // Using it only in the first half of the timeout keeps clear of that, and leaves the user
+    // at least the other half in the sheet if Google's timer counts from the prepare.
+    private val maxAgeMs = (timeoutMs?.toLong()?.takeIf { it > 0 } ?: DEFAULT_REQUEST_TIMEOUT_MS) / 2
+
+    fun isFresh(nowMs: Long): Boolean = nowMs - preparedAtMs <= maxAgeMs
+}
 
 class ReactNativePasskeysModule : Module() {
 
@@ -99,7 +113,9 @@ class ReactNativePasskeysModule : Module() {
             mainScope.launch {
                 try {
                     val prepared = credentialManager.prepareGetCredential(getCredentialRequest)
-                    preparedGet = prepared.pendingGetCredentialHandle?.let { PreparedGet(json, it) }
+                    preparedGet = prepared.pendingGetCredentialHandle?.let {
+                        PreparedGet(json, it, SystemClock.elapsedRealtime(), request.timeout)
+                    }
                     promise.resolve(preparedGet != null)
                 } catch (e: Exception) {
                     // A failed prepare only costs the head start: get falls back to getCredential
@@ -115,8 +131,11 @@ class ReactNativePasskeysModule : Module() {
             val json = Gson().toJson(request)
             val getCredentialRequest =
                 GetCredentialRequest(listOf(GetPublicKeyCredentialOption(json)))
-            // A handle is bound to the exact request it was prepared for, and is spent by one get
-            val prepared = preparedGet?.takeIf { it.requestJson == json }
+            // A handle is bound to the exact request it was prepared for, is spent by one get, and
+            // one too old is dropped rather than handed to Google
+            val prepared = preparedGet?.takeIf {
+                it.requestJson == json && it.isFresh(SystemClock.elapsedRealtime())
+            }
             preparedGet = null
 
             mainScope.launch {
