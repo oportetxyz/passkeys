@@ -69,7 +69,8 @@ export async function get(
  *
  * Platform support:
  * - Android: 14+ (prepareGetCredential). The next `get` with a request identical to this one opens
- *   from the prepared state; any other request, or a second `get`, starts from scratch.
+ *   from the prepared state; any other request, a second `get`, or a `get` more than half the
+ *   request's timeout (60 s when it names none) after the prepare, starts from scratch.
  * - iOS, Web: no-op
  *
  * @returns `true` when a prepared `get` is waiting
