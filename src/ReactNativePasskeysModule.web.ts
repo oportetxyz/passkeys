@@ -30,6 +30,12 @@ export default {
 		);
 	},
 
+	// The browser owns the sheet and never blocks a new request on an unanswered
+	// one, so there is nothing to free. Only iOS needs this.
+	cancel(): Promise<boolean> {
+		return Promise.resolve(false);
+	},
+
 	async create({
 		signal,
 		...request

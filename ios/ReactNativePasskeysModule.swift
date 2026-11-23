@@ -140,6 +140,22 @@ final public class ReactNativePasskeysModule: Module, PasskeyResultHandler {
 
             return false
         }
+        // Drops a ceremony iOS started but never answered (sheet cancelled by
+        // backgrounding, or a delegate that never fired): the stale slot would
+        // otherwise reject every get and create with
+        // PendingPasskeyRequestException until the process restarts. A
+        // still-visible sheet is left alone; its late callbacks find no
+        // context and are dropped.
+        AsyncFunction("cancel") { () -> Bool in
+            guard let stale = passkeyContext else {
+                return false
+            }
+            passkeyContext = nil
+            stale.promise.reject(UserCancelledException(
+                name: "UserCancelledException",
+                description: "Pending passkey request cancelled"))
+            return true
+        }.runOnQueue(.main)
 
     }
 

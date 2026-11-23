@@ -95,3 +95,17 @@ export async function signalCurrentUserDetails(
 ): Promise<boolean> {
 	return await ReactNativePasskeysModule.signalCurrentUserDetails(options);
 }
+
+/**
+ * Drops a ceremony the platform started but never answered, freeing the slot
+ * that would otherwise reject every `get` and `create` as pending until the app
+ * restarts. The abandoned request rejects as a user cancellation.
+ *
+ * Platform support:
+ * - iOS: resolves `true` when a stuck request was dropped
+ * - Android, Web: no-op, resolves `false` — their credential managers never
+ *   block a new request on an unanswered one
+ */
+export async function cancel(): Promise<boolean> {
+	return await ReactNativePasskeysModule.cancel();
+}

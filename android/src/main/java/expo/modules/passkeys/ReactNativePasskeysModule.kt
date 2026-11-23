@@ -125,6 +125,12 @@ class ReactNativePasskeysModule : Module() {
             }
         }
 
+        // Credential Manager never blocks a new get on an unanswered one, so
+        // there is nothing to free. Only iOS needs this.
+        AsyncFunction("cancel") { promise: Promise ->
+            promise.resolve(false)
+        }
+
         AsyncFunction("get") { request: PublicKeyCredentialRequestOptions, _: GetOptions?, promise: Promise ->
             val credentialManager =
                 CredentialManager.create(appContext.reactContext?.applicationContext!!)
